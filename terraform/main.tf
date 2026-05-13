@@ -59,16 +59,25 @@ resource "aws_iam_role_policy" "lambda_dynamodb_policy" {
     }]
   })
 }
-# Lambda Function
-resource "aws_lambda_function" "ticket_processor" {
-  function_name = "SenatSupportProcessor"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "app.lambda_handler"
-  runtime       = "python3.11"
+resource "aws_lambda_function" "ticket_handler" {
+  function_name = "senatsupport-handler"
 
-  filename = "../lambda/lambda.zip"
-source_code_hash = filebase64sha256("../lambda/lambda.zip")
-}
+  role = aws_iam_role.lambda_role.arn
+
+  package_type = "Image"
+
+  image_uri = "490848272326.dkr.ecr.us-east-1.amazonaws.com/senatsupport-lambda:latest"
+
+  timeout = 30
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.tickets.name
+      SNS_TOPIC_ARN = aws_sns_topic.alerts.arn
+    }
+  }
+} 
+
 
 # API Gateway
 resource "aws_apigatewayv2_api" "api" {
@@ -84,7 +93,7 @@ output "api_url" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.api.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.ticket_processor.invoke_arn
+  integration_uri  = aws_lambda_function.ticket_handler.invoke_arn
 }
 
 # Route (endpoint)
@@ -105,7 +114,7 @@ resource "aws_apigatewayv2_stage" "stage" {
 resource "aws_lambda_permission" "api_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ticket_processor.function_name
+  function_name = aws_lambda_function.ticket_handler.function_name
   principal     = "apigateway.amazonaws.com"
 }
 
