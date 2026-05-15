@@ -136,14 +136,24 @@ resource "aws_lambda_function" "update_ticket" {
 
 # API Gateway
 resource "aws_apigatewayv2_api" "api" {
-  name          = "senatsupport-api"
+
+  name = "senatsupport-api"
+
   protocol_type = "HTTP"
+
+  cors_configuration {
+
+    allow_origins = ["*"]
+
+    allow_methods = ["*"]
+
+    allow_headers = ["*"]
+  }
 }
 
 output "api_url" {
   value = aws_apigatewayv2_api.api.api_endpoint
 }
-
 # Main ticket integration
 resource "aws_apigatewayv2_integration" "lambda_integration" {
 
