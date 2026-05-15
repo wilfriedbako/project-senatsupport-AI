@@ -49,7 +49,13 @@ Return ONLY valid JSON like this:
 
     output_text = response_body["results"][0]["outputText"]
 
-    return json.loads(output_text)
+    # Clean Bedrock response into valid JSON
+    start = output_text.find("{")
+    end = output_text.rfind("}") + 1
+
+    clean_json = output_text[start:end]
+
+    return json.loads(clean_json)
 
 
 def lambda_handler(event, context):
@@ -110,4 +116,3 @@ Summary: {ai_result['summary']}
             "summary": ai_result["summary"]
         })
     }
-}
