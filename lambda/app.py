@@ -16,7 +16,7 @@ bedrock = boto3.client(
 TOPIC_ARN = "arn:aws:sns:us-east-1:490848272326:SenatSupport-Alerts"
 
 
-# Real AI analysis using Bedrock
+# Real AI analysis using Bedrock Nova
 def analyze_with_ai(text):
 
     prompt = f"""
@@ -37,11 +37,20 @@ Return ONLY valid JSON like this:
     try:
 
         response = bedrock.invoke_model(
-          modelId="amazon.nova-lite-v1:0",
+            modelId="amazon.nova-lite-v1:0",
             body=json.dumps({
-                "inputText": prompt,
-                "textGenerationConfig": {
-                    "maxTokenCount": 200,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ],
+                "inferenceConfig": {
+                    "maxTokens": 200,
                     "temperature": 0.2
                 }
             })
@@ -49,9 +58,9 @@ Return ONLY valid JSON like this:
 
         response_body = json.loads(response["body"].read())
 
-        output_text = response_body["results"][0]["outputText"]
+        output_text = response_body["output"]["message"]["content"][0]["text"]
 
-        # Extract only JSON from Bedrock response
+        # Extract only JSON from AI response
         start = output_text.find("{")
         end = output_text.rfind("}") + 1
 
