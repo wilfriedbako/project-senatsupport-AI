@@ -34,28 +34,38 @@ Return ONLY valid JSON like this:
 }}
 """
 
-    response = bedrock.invoke_model(
-        modelId="amazon.titan-text-lite-v1",
-        body=json.dumps({
-            "inputText": prompt,
-            "textGenerationConfig": {
-                "maxTokenCount": 200,
-                "temperature": 0.2
-            }
-        })
-    )
+    try:
 
-    response_body = json.loads(response["body"].read())
+        response = bedrock.invoke_model(
+            modelId="amazon.titan-text-lite-v1",
+            body=json.dumps({
+                "inputText": prompt,
+                "textGenerationConfig": {
+                    "maxTokenCount": 200,
+                    "temperature": 0.2
+                }
+            })
+        )
 
-    output_text = response_body["results"][0]["outputText"]
+        response_body = json.loads(response["body"].read())
 
-    # Clean Bedrock response into valid JSON
-    start = output_text.find("{")
-    end = output_text.rfind("}") + 1
+        output_text = response_body["results"][0]["outputText"]
 
-    clean_json = output_text[start:end]
+        # Extract only JSON from Bedrock response
+        start = output_text.find("{")
+        end = output_text.rfind("}") + 1
 
-    return json.loads(clean_json)
+        clean_json = output_text[start:end]
+
+        return json.loads(clean_json)
+
+    except Exception as e:
+
+        return {
+            "category": "general",
+            "urgency": 3,
+            "summary": f"AI processing failed: {str(e)}"
+        }
 
 
 def lambda_handler(event, context):
