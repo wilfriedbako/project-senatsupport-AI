@@ -157,3 +157,26 @@ resource "aws_iam_role_policy" "lambda_sns_policy" {
     }]
   })
 }
+
+
+
+resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
+  alarm_name          = "SenatSupport-Lambda-Errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+
+  dimensions = {
+    FunctionName = aws_lambda_function.ticket_handler.function_name
+  }
+
+  alarm_description = "Triggers when Lambda has errors"
+
+  alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+}
