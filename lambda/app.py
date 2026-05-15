@@ -8,36 +8,48 @@ table = dynamodb.Table('SenatSupport-Tickets')
 
 sns = boto3.client('sns')
 
+bedrock = boto3.client(
+    service_name='bedrock-runtime',
+    region_name='us-east-1'
+)
+
 TOPIC_ARN = "arn:aws:sns:us-east-1:490848272326:SenatSupport-Alerts"
 
-# Simple AI logic
+
+# Real AI analysis using Bedrock
 def analyze_with_ai(text):
 
-    text = text.lower()
+    prompt = f"""
+You are an IT support AI.
 
-    if "fire" in text or "smoke" in text:
-        return {
-            "category": "hardware",
-            "urgency": 10
-        }
+Analyze this support ticket:
 
-    elif "slow" in text or "internet" in text:
-        return {
-            "category": "network",
-            "urgency": 5
-        }
+{text}
 
-    elif "error" in text or "fail" in text:
-        return {
-            "category": "software",
-            "urgency": 7
-        }
+Return ONLY valid JSON like this:
+{{
+  "category": "hardware/software/network/general",
+  "urgency": 1-10,
+  "summary": "short summary"
+}}
+"""
 
-    else:
-        return {
-            "category": "general",
-            "urgency": 2
-        }
+    response = bedrock.invoke_model(
+        modelId="amazon.titan-text-lite-v1",
+        body=json.dumps({
+            "inputText": prompt,
+            "textGenerationConfig": {
+                "maxTokenCount": 200,
+                "temperature": 0.2
+            }
+        })
+    )
+
+    response_body = json.loads(response["body"].read())
+
+    output_text = response_body["results"][0]["outputText"]
+
+    return json.loads(output_text)
 
 
 def lambda_handler(event, context):
@@ -54,7 +66,7 @@ def lambda_handler(event, context):
     # Get message
     user_query = body.get("message", "No message")
 
-    # Analyze message
+    # Analyze message with Bedrock AI
     ai_result = analyze_with_ai(user_query)
 
     # Generate ticket ID
@@ -66,11 +78,12 @@ def lambda_handler(event, context):
             "TicketID": ticket_id,
             "Issue": user_query,
             "Category": ai_result["category"],
-            "Urgency": ai_result["urgency"]
+            "Urgency": ai_result["urgency"],
+            "Summary": ai_result["summary"]
         }
     )
 
-    # 🔥 Send SNS alert if urgency is high
+    # Send SNS alert if urgency is high
     if ai_result["urgency"] >= 8:
 
         sns.publish(
@@ -83,6 +96,7 @@ Ticket ID: {ticket_id}
 Issue: {user_query}
 Category: {ai_result['category']}
 Urgency: {ai_result['urgency']}
+Summary: {ai_result['summary']}
 """
         )
 
@@ -92,6 +106,8 @@ Urgency: {ai_result['urgency']}
         "body": json.dumps({
             "ticket": ticket_id,
             "category": ai_result["category"],
-            "urgency": ai_result["urgency"]
+            "urgency": ai_result["urgency"],
+            "summary": ai_result["summary"]
         })
     }
+}
