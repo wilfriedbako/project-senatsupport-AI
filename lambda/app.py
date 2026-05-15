@@ -37,7 +37,7 @@ Return ONLY valid JSON like this:
     try:
 
         response = bedrock.invoke_model(
-            modelId="amazon.titan-text-lite-v1",
+            modelId="amazon.titan-text-express-v1",
             body=json.dumps({
                 "inputText": prompt,
                 "textGenerationConfig": {
