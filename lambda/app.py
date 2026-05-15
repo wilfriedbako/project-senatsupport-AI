@@ -1,6 +1,7 @@
 import boto3
 import uuid
 import json
+from datetime import datetime
 
 # AWS services
 dynamodb = boto3.resource('dynamodb')
@@ -16,7 +17,7 @@ bedrock = boto3.client(
 TOPIC_ARN = "arn:aws:sns:us-east-1:490848272326:SenatSupport-Alerts"
 
 
-# Real AI analysis using Bedrock Nova
+# AI ticket analysis using Amazon Bedrock
 def analyze_with_ai(text):
 
     prompt = f"""
@@ -60,7 +61,7 @@ Return ONLY valid JSON like this:
 
         output_text = response_body["output"]["message"]["content"][0]["text"]
 
-        # Extract only JSON from AI response
+        # Extract JSON only
         start = output_text.find("{")
         end = output_text.rfind("}") + 1
 
@@ -77,6 +78,26 @@ Return ONLY valid JSON like this:
         }
 
 
+# Engineer assignment logic
+def assign_engineer(category, urgency):
+
+    # High urgency goes directly to senior engineer
+    if urgency >= 8:
+        return "Wilfried"
+
+    elif category == "hardware":
+        return "Kya"
+
+    elif category == "network":
+        return "Enzo"
+
+    elif category == "software":
+        return "Hakim"
+
+    else:
+        return "Bako"
+
+
 def lambda_handler(event, context):
 
     # Parse request body
@@ -88,27 +109,41 @@ def lambda_handler(event, context):
     elif body is None:
         body = {}
 
-    # Get message
+    # Get user message
     user_query = body.get("message", "No message")
 
-    # Analyze message with Bedrock AI
+    # Analyze with AI
     ai_result = analyze_with_ai(user_query)
+
+    # Assign engineer automatically
+    assigned_engineer = assign_engineer(
+        ai_result["category"],
+        ai_result["urgency"]
+    )
 
     # Generate ticket ID
     ticket_id = str(uuid.uuid4())[:8]
 
-    # Save to DynamoDB
+    # Timestamp
+    created_at = datetime.utcnow().isoformat()
+
+    # Save ticket to DynamoDB
     table.put_item(
         Item={
             "TicketID": ticket_id,
             "Issue": user_query,
             "Category": ai_result["category"],
             "Urgency": ai_result["urgency"],
-            "Summary": ai_result["summary"]
+            "Summary": ai_result["summary"],
+            "AssignedTo": assigned_engineer,
+            "Status": "open",
+            "CreatedAt": created_at,
+            "ResolvedBy": "",
+            "ClosedAt": ""
         }
     )
 
-    # Send SNS alert if urgency is high
+    # Send SNS alert for urgent tickets
     if ai_result["urgency"] >= 8:
 
         sns.publish(
@@ -118,20 +153,37 @@ def lambda_handler(event, context):
 New urgent ticket detected
 
 Ticket ID: {ticket_id}
-Issue: {user_query}
-Category: {ai_result['category']}
-Urgency: {ai_result['urgency']}
-Summary: {ai_result['summary']}
+
+Issue:
+{user_query}
+
+Category:
+{ai_result['category']}
+
+Urgency:
+{ai_result['urgency']}
+
+Summary:
+{ai_result['summary']}
+
+Assigned Engineer:
+{assigned_engineer}
+
+Status:
+open
 """
         )
 
-    # Return response
+    # API response
     return {
         "statusCode": 200,
         "body": json.dumps({
             "ticket": ticket_id,
             "category": ai_result["category"],
             "urgency": ai_result["urgency"],
-            "summary": ai_result["summary"]
+            "summary": ai_result["summary"],
+            "assigned_to": assigned_engineer,
+            "status": "open",
+            "created_at": created_at
         })
     }
