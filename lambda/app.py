@@ -126,22 +126,24 @@ def lambda_handler(event, context):
 
     # Timestamp
     created_at = datetime.utcnow().isoformat()
-
-    # Save ticket to DynamoDB
-    table.put_item(
-        Item={
-            "TicketID": ticket_id,
-            "Issue": user_query,
-            "Category": ai_result["category"],
-            "Urgency": ai_result["urgency"],
-            "Summary": ai_result["summary"],
-            "AssignedTo": assigned_engineer,
-            "Status": "open",
-            "CreatedAt": created_at,
-            "ResolvedBy": "",
-            "ClosedAt": ""
-        }
-    )
+    
+# Save ticket to DynamoDB
+table.put_item(
+    Item={
+        "TicketID": ticket_id,
+        "Issue": user_query,
+        "Category": ai_result["category"],
+        "Urgency": ai_result["urgency"],
+        "Summary": ai_result["summary"],
+        "AssignedTo": assigned_engineer,
+        "Status": "open",
+        "CreatedAt": created_at,
+        "ResolvedBy": "",
+        "ResolvedAt": "",
+        "ClosedAt": "",
+        "UpdatedAt": created_at
+    }
+)
 
     # Send SNS alert for urgent tickets
     if ai_result["urgency"] >= 8:
