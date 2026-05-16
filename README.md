@@ -64,7 +64,7 @@ This project combines concepts from:
 
 # Architecture Diagram
 
-![Architecture Diagram](./screenshots/architecture.png)
+![Architecture Diagram](./screenshots/DIAGRAM.png)
 
 ---
 
@@ -115,7 +115,7 @@ This provides a centralized operational overview instead of relying on hundreds 
 
 # Director Dashboard
 
-![Director Dashboard](./screenshots/director-dashboard.png)
+![Director Dashboard](./screenshots/DIRECTORDASHBOARD.png)
 
 ---
 
@@ -139,7 +139,7 @@ Lifecycle stages include:
 
 # Engineer Dashboard
 
-![Engineer Dashboard](./screenshots/engineer-dashboard.png)
+![Engineer Dashboard](./screenshots/ENGINEERDASH.png)
 
 ---
 
@@ -153,7 +153,7 @@ This simulates how real organizations escalate critical incidents to reduce resp
 
 # Critical Alert Notification
 
-![SNS Email Alert](./screenshots/email-alert.png)
+![SNS Email Alert](./screenshots/Emailnotofication.png)
 
 ---
 
@@ -174,7 +174,7 @@ This helps:
 
 # Terraform Deployment
 
-![Terraform Deployment](./screenshots/terraform-deployment.png)
+![Terraform Deployment](./screenshots/TerraformAPIerminal.png)
 
 ---
 
