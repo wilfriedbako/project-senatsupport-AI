@@ -115,7 +115,7 @@ This provides a centralized operational overview instead of relying on hundreds 
 
 # Director Dashboard
 
-![Director Dashboard](./screenshots/DIRECTORDASHBOARD.png)
+![Director Dashboard](Screenshot/DIRECTORDASHBOARD.png)
 
 ---
 
@@ -139,7 +139,7 @@ Lifecycle stages include:
 
 # Engineer Dashboard
 
-![Engineer Dashboard](./screenshots/ENGINEERDASH.png)
+![Engineer Dashboard](Screenshot/ENGINEERDASH.png)
 
 ---
 
@@ -153,7 +153,7 @@ This simulates how real organizations escalate critical incidents to reduce resp
 
 # Critical Alert Notification
 
-![SNS Email Alert](./screenshots/Emailnotofication.png)
+![SNS Email Alert](Screenshot/Emailnotofication.png)
 
 ---
 
@@ -174,7 +174,7 @@ This helps:
 
 # Terraform Deployment
 
-![Terraform Deployment](./screenshots/TerraformAPIerminal.png)
+![Terraform Deployment](Screenshot/TerraformAPIerminal.png)
 
 ---
 
