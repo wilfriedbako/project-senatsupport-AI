@@ -64,7 +64,7 @@ This project combines concepts from:
 
 # Architecture Diagram
 
-![Architecture Diagram](./screenshots/DIAGRAM.png)
+![Architecture Diagram](DIAGRAM.png)
 
 ---
 
